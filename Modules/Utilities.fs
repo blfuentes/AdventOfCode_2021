@@ -97,15 +97,15 @@ let iyrValid (elem:string) =
 let eyrValid (elem:string)=
     elem.Length = 4 && (elem |> int) >= 2020 && (elem |> int) <= 2030
 
-let hgtValid (elem:string)=
-    let parts =
-        match elem with
-        | Regex @"(?<height>\d+)(?<unittype>\w+)" [m; M] -> Some { height= m |> int; unittype = M }
-        | _ -> None
-    match parts with
-    | Some { HeightType.height = height; HeightType.unittype = unittype; } when unittype = "cm" -> height >= 150 && height <= 193
-    | Some { HeightType.height = height; HeightType.unittype = unittype; } when unittype = "in" -> height >= 59 && height <= 76
-    | _ -> false
+//let hgtValid (elem:string)=
+//    let parts =
+//        match elem with
+//        | Regex @"(?<height>\d+)(?<unittype>\w+)" [m; M] -> Some { height= m |> int; unittype = M }
+//        | _ -> None
+//    match parts with
+//    | Some { HeightType.height = height; HeightType.unittype = unittype; } when unittype = "cm" -> height >= 150 && height <= 193
+//    | Some { HeightType.height = height; HeightType.unittype = unittype; } when unittype = "in" -> height >= 59 && height <= 76
+//    | _ -> false
 
 let hclValid (elem:string)=
     match elem with
