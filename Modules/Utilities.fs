@@ -13,6 +13,12 @@ let GetLinesFromFileFSI2(path: string) =
 let GetLinesFromFileFSI(path: string) =
     File.ReadLines(path)
 
+// Returns a sublists list of size num: [1;2;3;4;5;6] -> (3) [[1;2;3];[2;3;4];[3;4;5];[4;5;6]]
+let rec getSubListBySize (num, list: 'a list) : 'a list list= 
+    match num <= list.Length with
+    | true -> [(list |> List.take num)] @ (getSubListBySize(num, (list.Tail)))
+    | false -> []
+
 let rec combination (num, list: 'a list) : 'a list list = 
     match num, list with
     | 0, _ -> [[]]
