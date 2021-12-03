@@ -11,7 +11,7 @@
     <Compile Include="day01\part02\day01_part02.fs" />
     <Compile Include="day02\part01\day02_part01.fs" />
     <Compile Include="day02\part02\day02_part02.fs" />
-    <Compile Include="day03\part01\day00_part01.fs" />
+    <Compile Include="day03\part01\day03_part01.fs" />
     <Compile Include="day03\part02\day03_part02.fs" />
     <Compile Include="day04\part01\day04_part01.fs" />
     <Compile Include="day04\part02\day04_part02.fs" />
@@ -121,7 +121,7 @@
     <None Include="day01\part02\day01_part02.fsx" />
     <None Include="day02\part01\day02_part01.fsx" />
     <None Include="day02\part02\day02_part02.fsx" />
-    <None Include="day03\part01\day00_part01.fsx" />
+    <None Include="day03\part01\day03_part01.fsx" />
     <None Include="day03\part02\day03_part02.fsx" />
     <None Include="day04\part01\day04_part01.fsx" />
     <None Include="day04\part02\day04_part02.fsx" />
