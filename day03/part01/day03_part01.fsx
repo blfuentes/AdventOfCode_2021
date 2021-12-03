@@ -1,8 +1,8 @@
 ﻿open System
 open System.IO
 
-let path = "day03_input.txt"
-//let path = "test_input.txt"
+//let path = "day03_input.txt"
+let path = "test_input.txt"
 let inputLines = File.ReadLines(__SOURCE_DIRECTORY__ + @"../../" + path) |> Seq.map (fun x -> x.ToCharArray() |> Array.map string) |> Seq.toList
 
 let calculateGammaRate(input: list<string[]>) =
