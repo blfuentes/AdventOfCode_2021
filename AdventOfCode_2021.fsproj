@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Playground.fsx" />
     <Compile Include="Modules/Utilities.fs" />
     <Compile Include="day00\part01\day00_part01.fs" />
     <Compile Include="day00\part02\day00_part02.fs" />
