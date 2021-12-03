@@ -11,7 +11,6 @@ let calculateGammaRate(input: list<string[]>) =
     let maxIdx = input.Head.Length - 1
     let tmp = seq {
         for i in 0 .. maxIdx do
-            //printfn "%i" i
             let numberOfOnes = input |> List.map(fun l -> l.[i]) |> List.filter (fun e -> e = "1") |> List.length
             match numberOfOnes >= (input.Length / 2) with
             | true -> yield "1"
