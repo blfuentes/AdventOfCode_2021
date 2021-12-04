@@ -25,6 +25,18 @@ let rec combination (num, list: 'a list) : 'a list list =
     | _, [] -> []
     | k, (x::xs) -> List.map ((@) [x]) (combination ((k-1), xs)) @ (combination (k, xs))
 
+
+let getChar ((row, col):int*int,  board:int[][]) =
+    board.[row].[col]
+
+let printArray (board: int[][]) =
+    let maxCol = board.[0].Length - 1
+    let maxRow = board.Length - 1
+    for r in [0 .. maxRow] do
+        for c in [0 .. maxCol] do
+            printf "%3i" (getChar((r,c), board))
+        printfn "%s" System.Environment.NewLine
+
 let possibleCombinations (combSize: int) (mainList: uint64 list) =
     seq {
         for init in mainList do
@@ -47,6 +59,9 @@ let getLinesGroupBySeparator (inputLines: string list) (separator: string) =
     let result = List.foldBack folder (complete) ([List.last complete], []) 
     (fst result)::(snd result)
 
+let splitStringBySeparator (content: string) (separator: string) =
+    let subcontent = content.Split([|separator|], StringSplitOptions.None)
+    subcontent
 
 let getLinesGroupBySeparator2 (inputLines: string list) (separator: string) =
     let complete = 
@@ -66,6 +81,20 @@ let folder (a) (cur, acc) =
     match a with
     | _ when a <> 0 -> a::cur, acc
     | _ -> [], cur::acc
+
+let splitstring separator (s:string) =
+    let values = ResizeArray<_>()
+    let rec gather start i =
+        let add () = s.Substring(start,i-start) |> values.Add
+        if i = s.Length then add()
+        elif s.[i] = '"' then inQuotes start (i+1) 
+        elif s.[i] = separator then add(); gather (i+1) (i+1) 
+        else gather start (i+1)
+    and inQuotes start i =
+        if s.[i] = '"' then gather start (i+1)
+        else inQuotes start (i+1)
+    gather 0 0
+    values.ToArray()
 
 let split lst =
     let result = List.foldBack folder (lst) ([], [])
