@@ -25,16 +25,12 @@ let rec combination (num, list: 'a list) : 'a list list =
     | _, [] -> []
     | k, (x::xs) -> List.map ((@) [x]) (combination ((k-1), xs)) @ (combination (k, xs))
 
-
-let getChar ((row, col):int*int,  board:int[][]) =
-    board.[row].[col]
-
 let printArray (board: int[][]) =
     let maxCol = board.[0].Length - 1
     let maxRow = board.Length - 1
     for r in [0 .. maxRow] do
         for c in [0 .. maxCol] do
-            printf "%3i" (getChar((r,c), board))
+            printf "%3i" board.[r].[c]
         printfn "%s" System.Environment.NewLine
 
 let possibleCombinations (combSize: int) (mainList: uint64 list) =
@@ -122,25 +118,6 @@ let getCollisionsBasic (currentForest: list<int[]>) initX initY right down maxwi
             | true -> yield point
             | _ -> ()
     } |> Seq.length
-
-let byrValid (elem:string) =
-    elem.Length = 4 && (elem |> int) >= 1920 && (elem |> int) <= 2002
-
-let iyrValid (elem:string) =
-    elem.Length = 4 && (elem |> int) >= 2010 && (elem |> int) <= 2020
-
-let eyrValid (elem:string)=
-    elem.Length = 4 && (elem |> int) >= 2020 && (elem |> int) <= 2030
-
-//let hgtValid (elem:string)=
-//    let parts =
-//        match elem with
-//        | Regex @"(?<height>\d+)(?<unittype>\w+)" [m; M] -> Some { height= m |> int; unittype = M }
-//        | _ -> None
-//    match parts with
-//    | Some { HeightType.height = height; HeightType.unittype = unittype; } when unittype = "cm" -> height >= 150 && height <= 193
-//    | Some { HeightType.height = height; HeightType.unittype = unittype; } when unittype = "in" -> height >= 59 && height <= 76
-//    | _ -> false
 
 let hclValid (elem:string)=
     match elem with
