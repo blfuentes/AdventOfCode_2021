@@ -10,5 +10,5 @@ let horizontalpositions =
         |> Seq.map(fun l -> l.Split(',') |> Array.map int |> Array.toList) 
             |> Seq.exactlyOne |> List.sort
 
-let distance = [horizontalpositions.Head.. horizontalpositions.Item(horizontalpositions.Length - 1)]
-                |> List.map(fun i -> horizontalpositions |> List.map(fun p -> abs(p - i)) |> List.sum) |> List.min
+[horizontalpositions.Head.. horizontalpositions.Item(horizontalpositions.Length - 1)]
+    |> List.map(fun p -> horizontalpositions |> List.sumBy(fun i -> abs(p - i))) |> List.min

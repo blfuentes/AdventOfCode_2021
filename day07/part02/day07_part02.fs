@@ -18,4 +18,4 @@ let calculateFuel position target =
 
 let execute =
     [horizontalpositions.Head.. horizontalpositions.Item(horizontalpositions.Length - 1)]
-    |> List.map(fun i -> horizontalpositions |> List.map(fun p -> calculateFuel i p) |> List.sum) |> List.min
+    |> List.map(fun p -> horizontalpositions |> List.sumBy(fun i -> calculateFuel i p)) |> List.min
