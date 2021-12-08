@@ -73,6 +73,23 @@ let getLinesGroupBySeparator2 (inputLines: string list) (separator: string) =
     let result = List.foldBack folder (complete) ([], [])
     (fst result)::(snd result)
 
+///////////////////////////////////////
+// DAY 8 Permutations
+let distrib e L =
+    let rec aux pre post = 
+        seq {
+            match post with
+            | [] -> yield (L @ [e])
+            | h::t -> yield (List.rev pre @ [e] @ post)
+                      yield! aux (h::pre) t 
+        }
+    aux [] L
+
+let rec perms = function 
+    | [] -> Seq.singleton []
+    | h::t -> Seq.collect (distrib h) (perms t)
+///////////////////////////////////////
+
 let folder (a) (cur, acc) = 
     match a with
     | _ when a <> 0 -> a::cur, acc
