@@ -88,7 +88,7 @@ let matchesCables (entry: string) (values: string list) =
 let calculateOuput (values:string[], key) =
     (decrypt values.[0] key) * 1000 + (decrypt values.[1] key) * 100 + (decrypt values.[2] key) * 10 + (decrypt values.[3] key)
 
-let processLine(line: string[][]) = 
+let processLine(line: string[][]) (perms: string list list) = 
     let uniquesignalpatterns = (line.[0], line.[1])
 
     let selector2 = ((fst uniquesignalpatterns) |> Array.find(fun p -> p.Length = 2)).ToCharArray() |> Array.map string
@@ -101,9 +101,7 @@ let processLine(line: string[][]) =
     let tmp4 = (fst uniquesignalpatterns |> Array.find(fun p -> p.Length = 4)).ToCharArray() |> Array.map string
     let selector4 = tmp4 |> Array.filter(fun t -> not((selector2 |> Array.toList) |> List.contains t) && not((selector3 |> Array.toList) |> List.contains t))
     let indexes4 = [|leds |> List.findIndex(fun e -> e = selector4.[0]); leds |> List.findIndex(fun e -> e = selector4.[1])|]
-
-    let possiblecombinations = Utilities.perms leds |> Seq.toList
-    let cablesCandidates = possiblecombinations 
+    let cablesCandidates = perms 
                             |> List.filter(fun l -> (l.Item(indexes2.[0]) = leds.[2] && l.Item(indexes2.[1]) = leds.[5] && l.Item(indexes3) = leds.[0]) ||   
                                                     (l.Item(indexes2.[0]) = leds.[5] && l.Item(indexes2.[1]) = leds.[2] && l.Item(indexes3) = leds.[0]))
     let secondFilter = cablesCandidates |> List.filter(fun l -> l.Item(indexes4.[0]) = leds.[1] && l.Item(indexes4.[1]) = leds.[3] ||
@@ -114,4 +112,5 @@ let processLine(line: string[][]) =
     (result, value)
 
 let execute =
-    inputPartsCollection |> Array.map(fun l -> processLine l) |> Array.sumBy(fun e -> snd e)
+    let possiblecombinations = Utilities.perms leds |> Seq.toList
+    inputPartsCollection |> Array.map(fun l -> processLine l possiblecombinations) |> Array.sumBy(fun e -> snd e)

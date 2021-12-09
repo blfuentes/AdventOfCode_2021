@@ -13,6 +13,13 @@ let GetLinesFromFileFSI2(path: string) =
 let GetLinesFromFileFSI(path: string) =
     File.ReadLines(path)
 
+let duration f = 
+    let timer = new System.Diagnostics.Stopwatch()
+    timer.Start()
+    let returnValue = f()
+    printfn "Elapsed Time: %i" timer.ElapsedMilliseconds
+    returnValue 
+
 // Returns a sublists list of size num: [1;2;3;4;5;6] -> (3) [[1;2;3];[2;3;4];[3;4;5];[4;5;6]]
 let rec getSubListBySize (num, list: 'a list) : 'a list list= 
     match num <= list.Length with
