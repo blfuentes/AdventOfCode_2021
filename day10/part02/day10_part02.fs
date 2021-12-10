@@ -12,8 +12,6 @@ let path = "day10_input.txt"
 let inputPartsCollection = 
     File.ReadLines(__SOURCE_DIRECTORY__ + @"../../" + path) |> Seq.toList
 
-let pairs = [[|"("; ")"|]; [|"["; "]"|]; [|"{"; "}"|]; [|"<"; ">"|]]
-
 let returnPair (e: string) =
     match e with
     | "(" -> ")"
@@ -49,14 +47,6 @@ let processLine (line:string) =
     let result = processPart ((line.ToCharArray() |> Array.map string |> Array.toList), openerStack)
     result
 
-let calculate (entry: string * string list) =
-    match fst entry with
-    | ")" -> 3 * (snd entry).Length
-    | "]" -> 57 * (snd entry).Length
-    | "}" -> 1197 * (snd entry).Length
-    | ">" -> 25137 * (snd entry).Length
-    | _ -> 0
-
 let rec getValue(queue: Queue<string>, value: bigint) =
     match queue.Count = 0 with
     | true -> value
@@ -72,7 +62,7 @@ let rec getValue(queue: Queue<string>, value: bigint) =
 let calculateStackStore(stack: Stack<string>) =
     let completionQueue = new Queue<string>()
     while stack.Count > 0 do completionQueue.Enqueue(returnPair(stack.Pop()))
-    getValue(completionQueue, 0)
+    getValue(completionQueue, 0I)
 
 let execute =
     let linesResults = inputPartsCollection |> List.map(fun l -> processLine l) |> List.filter(fun r -> fst r)

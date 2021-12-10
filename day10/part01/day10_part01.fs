@@ -12,8 +12,6 @@ let path = "day10_input.txt"
 let inputPartsCollection = 
     File.ReadLines(__SOURCE_DIRECTORY__ + @"../../" + path) |> Seq.toList
 
-let pairs = [[|"("; ")"|]; [|"["; "]"|]; [|"{"; "}"|]; [|"<"; ">"|]]
-
 let returnPair (e: string) =
     match e with
     | "(" -> ")"
