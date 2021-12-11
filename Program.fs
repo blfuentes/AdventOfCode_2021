@@ -101,10 +101,14 @@ let main argv =
     )
 
     // DAY 11
-    //let resultday11Part1 = day11_part01.execute
-    //printfn "Final result Day 11 part 1: %A" resultday11Part1
-    //let resultday11Part2 = day11_part02.execute
-    //printfn "Final result Day 11 part 2: %A" resultday11Part2
+    Utilities.duration(fun () ->
+        let resultday11Part1 = day11_part01.execute
+        printfn "Final result Day 11 part 1: %i" resultday11Part1
+    )
+    Utilities.duration(fun () ->
+        let resultday11Part2 = day11_part02.execute
+        printfn "Final result Day 11 part 2: %i" resultday11Part2
+    )
 
     // DAY 12
     //let resultday12Part1 = day12_part01.execute
