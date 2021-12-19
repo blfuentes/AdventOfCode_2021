@@ -1,4 +1,4 @@
-﻿688,126
+688,126
 1237,406
 1228,327
 827,189
@@ -896,8 +896,8 @@
 962,628
 170,696
 
-fold along x=655
 fold along y=447
+fold along x=655
 fold along x=327
 fold along y=223
 fold along x=163

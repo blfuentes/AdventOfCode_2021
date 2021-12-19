@@ -113,17 +113,21 @@ let main argv =
     // DAY 12
     Utilities.duration(fun () ->
         let resultday12Part1 = day12_part01.execute
-        printfn "Final result Day 12 part 1: %A" resultday12Part1
+        printfn "Final result Day 12 part 1: %i" resultday12Part1
     )
     Utilities.duration(fun () ->
         let resultday12Part2 = day12_part02.execute
-        printfn "Final result Day 12 part 2: %A" resultday12Part2
+        printfn "Final result Day 12 part 2: %i" resultday12Part2
     )
     // DAY 13
-    //let resultday13Part1 = day13_part01.execute
-    //printfn "Final result Day 13 part 1: %A" resultday13Part1
-    //let resultday13Part2 = day13_part02.execute
-    //printfn "Final result Day 13 part 2: %A" resultday13Part2
+    Utilities.duration(fun () ->
+        let resultday13Part1 = day13_part01.execute
+        printfn "Final result Day 13 part 1: %i" resultday13Part1
+    )
+    Utilities.duration(fun () ->
+        let resultday13Part2 = day13_part02.execute
+        printfn "Final result Day 13 part 2: %i" resultday13Part2
+    )
 
     // DAY 14
     //let resultday14Part1 = day14_part01.execute
