@@ -123,6 +123,10 @@ let split lst =
 let updateElement index element list = 
   list |> List.mapi (fun i v -> if i = index then element else v)
 
+let toJagged<'a> (arr: 'a[,]) : 'a[][] =
+    [|for x in 0..Array2D.length1 arr - 1 do
+        yield [| for y in 0 ..Array2D.length2 arr - 1 -> arr.[x, y] |]|]
+
 // XOR OPERATOR
 let (^@) (a: bool) (b:bool) : bool =
     a <> b
