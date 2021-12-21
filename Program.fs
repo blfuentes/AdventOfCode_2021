@@ -136,7 +136,7 @@ let main argv =
     )
     Utilities.duration(fun () ->
         let resultday14Part2 = day14_part02.execute
-        printfn "Final result Day 14 part 2: %i" resultday14Part2
+        printfn "Final result Day 14 part 2: %A" resultday14Part2
     )
 
     // DAY 15
