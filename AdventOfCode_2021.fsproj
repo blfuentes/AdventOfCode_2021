@@ -100,7 +100,14 @@
     <Content Include="day15\day15_input.txt" />
     <Content Include="day15\test_input.txt" />
     <Content Include="day16\day16_input.txt" />
-    <Content Include="day16\test_input.txt" />
+    <Content Include="day16\test_input_all.txt" />
+    <Content Include="day16\test_input_00.txt" />
+    <Content Include="day16\test_input_01.txt" />
+    <Content Include="day16\test_input_02.txt" />
+    <Content Include="day16\test_input_03.txt" />
+    <Content Include="day16\test_input_04.txt" />
+    <Content Include="day16\test_input_05.txt" />
+    <Content Include="day16\test_input_06.txt" />
     <Content Include="day17\day17_input.txt" />
     <Content Include="day17\test_input.txt" />
     <Content Include="day18\day18_input.txt" />
