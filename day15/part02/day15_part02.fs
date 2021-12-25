@@ -19,10 +19,9 @@ let heuristic(a: int[], b: int[]) =
     Math.Abs(a.[1] - b.[1]) + Math.Abs(a.[0] - b.[0])
 
 let rec findPath(mycave: int[][], goal: int[], myfrontier: int[] list, mycamefrom: Dictionary<int*int, int*int>, mycostsofar: Dictionary<int*int, int>) =
-    match myfrontier with 
+    match (myfrontier |> List.sortBy(fun f -> f.[2])) with 
     | [] -> (mycamefrom, mycostsofar)
-    | x::xs -> 
-        let current::tail = (myfrontier |> List.sortBy(fun f -> f.[2]))
+    | current::tail -> 
         match current.[0] = goal.[0] && current.[1] = goal.[1] with
         | true -> (mycamefrom, mycostsofar)
         | false -> 
