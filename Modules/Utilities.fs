@@ -3,6 +3,7 @@ module Utilities
 open System
 open System.IO
 open System.Text.RegularExpressions
+open System.Globalization
 
 let GetLinesFromFile(path: string) =
     File.ReadAllLines(__SOURCE_DIRECTORY__ + @"../../" + path)
@@ -172,3 +173,9 @@ let commonElements (input: char array list) =
 
 let commonElements2 (input: char array list) =
     input |> List.map (List.ofArray) |> Seq.map Set.ofList |> Set.intersectMany
+
+let rev str =
+    StringInfo.ParseCombiningCharacters(str) 
+    |> Array.rev
+    |> Seq.map (fun i -> StringInfo.GetNextTextElement(str, i))
+    |> String.concat ""
