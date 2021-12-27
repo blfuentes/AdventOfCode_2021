@@ -38,13 +38,28 @@ let typeToOp(typeid: int64) =
     | 7 -> "equal"
     | _ -> ""
 
-let rec parseMessage(mymessage: string, versions: int64 list, currentStack: Stack<string>) =
+let numberOfSubpackets(typeid: int64) =
+    match int32(typeid) with
+    | 4 -> 1
+    | 0 -> -1
+    | 1 -> -1
+    | 2 -> -1
+    | 3 -> -1
+    | 5 -> 2
+    | 6 -> 2
+    | 7 -> 2
+    | _ -> 0
+
+let rec parseMessage(mymessage: string, versions: int64 list, packageid:int, currentStack: Stack<string[]>) =
     let version = binToDec(mymessage.Substring(0, 3))
     let typeid = binToDec(mymessage.Substring(3, 3))
     let op = typeToOp(typeid)
-    currentStack.Push(op)
+    let numOfSubpackets = numberOfSubpackets(typeid)
+
+    //currentStack.Push([|packageid.ToString(); op|])
     match int32(typeid) with
     | 4 -> 
+        currentStack.Push([|packageid.ToString(); op|])
         let number = mymessage.Substring(6)
         let parts = number.ToCharArray() |> Array.chunkBySize(5) |> Array.map(fun chunk -> String.Join("", chunk))
         let splitIdx = parts |> Array.findIndex(fun p -> p.Substring(0, 1) = "0")
@@ -52,13 +67,15 @@ let rec parseMessage(mymessage: string, versions: int64 list, currentStack: Stac
         let usedPartsLength = usedParts |> Array.sumBy(fun l -> l.Length)
         let remainingPart = mymessage.Substring(6 + usedPartsLength)
         let finalnumber = String.Join("", usedParts |> Array.map(fun p -> p.Substring(1, 4)))
-        currentStack.Push(binToDec(finalnumber).ToString())
+        currentStack.Push([|packageid.ToString(); binToDec(finalnumber).ToString()|])
         versions @ [version] @ 
                             if (remainingPart.Contains("1") && remainingPart.Length >= 7) then 
-                                parseMessage(remainingPart, [], currentStack) 
+                                parseMessage(remainingPart, [], packageid, currentStack) 
                             else 
                                 []
     | _ ->
+        let newpackageid = packageid + 1
+        currentStack.Push([|newpackageid.ToString(); op|])
         let lenghtypeid = mymessage.Substring(6, 1)
         match lenghtypeid with
         | "0" ->
@@ -71,7 +88,7 @@ let rec parseMessage(mymessage: string, versions: int64 list, currentStack: Stac
             let subpacket = adjustedMymessage.Substring(22)
             [version] @ 
                     if (subpacket.Contains("1") && subpacket.Length >= 7) then 
-                        parseMessage(subpacket, [], currentStack) 
+                        parseMessage(subpacket, [], newpackageid, currentStack) 
                     else 
                         []
         | "1" ->
@@ -80,12 +97,11 @@ let rec parseMessage(mymessage: string, versions: int64 list, currentStack: Stac
                     mymessage + (new String('0', 18 - mymessage.Length))
                 else
                     mymessage
-            let numberofpackets = binToDec(adjustedMymessage.Substring(7, 11))
-            currentStack.Push("(" + numberofpackets.ToString() + ")")
+            let numberofpackets = int32(binToDec(adjustedMymessage.Substring(7, 11)))
             let subpackets = adjustedMymessage.Substring(18)
             [version] @ 
                     if (subpackets.Contains("1") && subpackets.Length >= 7) then 
-                        parseMessage(subpackets, [], currentStack) 
+                        parseMessage(subpackets, [], newpackageid, currentStack) 
                     else 
                         []
 
@@ -105,16 +121,16 @@ let message =
 
 let tmpmessage = message |> Seq.exactlyOne 
 
-let opStack = new Stack<string>()
-parseMessage(tmpmessage, [], opStack) |> List.sum
+let opStack = new Stack<string[]>()
+parseMessage(tmpmessage, [], 0, opStack) |> List.sum
 
-let values =
+let xx =
     seq {
         while opStack.Count > 0 do
             let value = opStack.Pop()
-            if value <> "lit" then yield value
+            if value.[1] <> "lit" then yield value
     } |> Seq.toList |> List.rev
-
+let values = xx |> List.map(fun v -> "(" + v.[0] + ")" + v.[1])
 printfn "%s", String.Join(",", values)
 
 let samples = [|"C200B40A82";                   // "2"; "1"; "sum" -> 3
@@ -127,15 +143,15 @@ let samples = [|"C200B40A82";                   // "2"; "1"; "sum" -> 3
                 "9C0141080250320F1802104A08"|]  // "2"; "2"; "prod"; "3"; "1"; "sum"; "equal" -> 1
 let tmpmessage2 = String.Join("", samples.[7].ToCharArray() |> Array.map(fun c -> hexToBin((string)c)))
 
-let opStack2 = new Stack<string>()
-parseMessage(tmpmessage2, [], opStack2)
+let opStack2 = new Stack<string[]>()
+parseMessage(tmpmessage2, [], 0, opStack2)
 
 let values2 =
     seq {
         while opStack2.Count > 0 do
             let value = opStack2.Pop()
             //yield value
-            if value <> "lit" then yield value
+            if value.[1] <> "lit" then yield value
     } |> Seq.toList |> List.rev
 
 printfn "%s", String.Join(",", values2)
@@ -193,5 +209,5 @@ let rec processResult(currentlist: string list, myops: string list) =
 //    | [] -> result
 //    | head::tail -> processResult([result.ToString()] @ rest)
 
-processResult(values2, operations)
-processResult(values, operations)
+//processResult(values2, operations)
+//processResult(values, operations)
