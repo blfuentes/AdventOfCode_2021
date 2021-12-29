@@ -4,6 +4,8 @@ open System.Text.RegularExpressions
 open System.Collections.Generic
 open System.Globalization  
 
+#load @"../../Modules/Utilities.fs"
+
 let hexToBin(hex: string) =
     match hex with
     | "0" -> "0000"
@@ -50,63 +52,125 @@ let numberOfSubpackets(typeid: int64) =
     | 7 -> 2
     | _ -> 0
 
-let rec parseMessage(mymessage: string, versions: int64 list, packageid:int, currentStack: Stack<string[]>) =
-    let version = binToDec(mymessage.Substring(0, 3))
-    let typeid = binToDec(mymessage.Substring(3, 3))
-    let op = typeToOp(typeid)
-    let numOfSubpackets = numberOfSubpackets(typeid)
+let operations = ["sum"; "prod"; "min"; "max"; "greater"; "lesser"; "equal"]
 
-    //currentStack.Push([|packageid.ToString(); op|])
-    match int32(typeid) with
-    | 4 -> 
-        currentStack.Push([|packageid.ToString(); op|])
-        let number = mymessage.Substring(6)
-        let parts = number.ToCharArray() |> Array.chunkBySize(5) |> Array.map(fun chunk -> String.Join("", chunk))
-        let splitIdx = parts |> Array.findIndex(fun p -> p.Substring(0, 1) = "0")
-        let usedParts = parts |> Array.take(splitIdx + 1)
-        let usedPartsLength = usedParts |> Array.sumBy(fun l -> l.Length)
-        let remainingPart = mymessage.Substring(6 + usedPartsLength)
-        let finalnumber = String.Join("", usedParts |> Array.map(fun p -> p.Substring(1, 4)))
-        currentStack.Push([|packageid.ToString(); binToDec(finalnumber).ToString()|])
-        versions @ [version] @ 
-                            if (remainingPart.Contains("1") && remainingPart.Length >= 7) then 
-                                parseMessage(remainingPart, [], packageid, currentStack) 
-                            else 
-                                []
-    | _ ->
-        let newpackageid = packageid + 1
-        currentStack.Push([|newpackageid.ToString(); op|])
-        let lenghtypeid = mymessage.Substring(6, 1)
-        match lenghtypeid with
-        | "0" ->
-            let adjustedMymessage = 
-                if(22 - mymessage.Length > 0) then
-                    mymessage + (new String('0', 22 - mymessage.Length))
-                else
-                    mymessage
-            let totallength = binToDec(adjustedMymessage.Substring(7, 15))
-            let subpacket = adjustedMymessage.Substring(22)
-            [version] @ 
-                    if (subpacket.Contains("1") && subpacket.Length >= 7) then 
-                        parseMessage(subpacket, [], newpackageid, currentStack) 
-                    else 
-                        []
-        | "1" ->
-            let adjustedMymessage = 
-                if (18 - mymessage.Length > 0) then
-                    mymessage + (new String('0', 18 - mymessage.Length))
-                else
-                    mymessage
-            let numberofpackets = int32(binToDec(adjustedMymessage.Substring(7, 11)))
-            let subpackets = adjustedMymessage.Substring(18)
-            [version] @ 
-                    if (subpackets.Contains("1") && subpackets.Length >= 7) then 
-                        parseMessage(subpackets, [], newpackageid, currentStack) 
-                    else 
-                        []
+type Element =
+    {
+        ParentPackageId: int
+        PackageId: int
+        Version: int64
+        Op: string
+    }
 
-let path = "day16_input.txt"
-//let path = "test_input_all.txt"
+let rec parseMessage(mymessage: string, parentpackage:int, currentStack: Stack<Element>) =
+    match mymessage.Contains("1") && mymessage.Length >= 7 with
+    | false -> mymessage
+    | true -> 
+        let version = binToDec(mymessage.Substring(0, 3))
+        let typeid = binToDec(mymessage.Substring(3, 3))
+        let op = typeToOp(typeid)
+        let numOfSubpackets = numberOfSubpackets(typeid)
+        match int32(typeid) with
+        | 4 -> 
+            let newpackageid = parentpackage + 1
+            let number = mymessage.Substring(6)
+            let parts = number.ToCharArray() |> Array.chunkBySize(5) |> Array.map(fun chunk -> String.Join("", chunk))
+            let splitIdx = parts |> Array.findIndex(fun p -> p.Substring(0, 1) = "0")
+            let usedParts = parts |> Array.take(splitIdx + 1)
+            let usedPartsLength = usedParts |> Array.sumBy(fun l -> l.Length)
+            let remainingPart = mymessage.Substring(6 + usedPartsLength)
+            let finalnumber = String.Join("", usedParts |> Array.map(fun p -> p.Substring(1, 4)))
+            let newElement = {
+                ParentPackageId= parentpackage
+                PackageId= newpackageid
+                Version= version
+                Op= binToDec(finalnumber).ToString()
+            }
+            currentStack.Push(newElement)
+            parseMessage(remainingPart, newElement.PackageId, currentStack) 
+        | _ ->
+            let newpackageid = parentpackage + 1
+            let newElement = {
+                ParentPackageId= parentpackage
+                PackageId= newpackageid
+                Version= version
+                Op= op
+            }
+            currentStack.Push(newElement)
+            let lenghtypeid = mymessage.Substring(6, 1)
+            match lenghtypeid with
+            | "0" ->
+                let adjustedMymessage = 
+                    if(22 - mymessage.Length > 0) then
+                        mymessage + (new String('0', 22 - mymessage.Length))
+                    else
+                        mymessage
+                let totallength = binToDec(adjustedMymessage.Substring(7, 15))
+                let subpacket = adjustedMymessage.Substring(22)
+                parseMessage(subpacket, newpackageid, currentStack) 
+
+                //parseMessage(subpacket.Substring(0, int(totallength)), newpackageid, currentStack) 
+            | "1" ->
+                let adjustedMymessage = 
+                    if (18 - mymessage.Length > 0) then
+                        mymessage + (new String('0', 18 - mymessage.Length))
+                    else
+                        mymessage
+                let numberofpackets = int32(binToDec(adjustedMymessage.Substring(7, 11)))
+                let subpackets = adjustedMymessage.Substring(18)
+                parseMessage(subpackets, newpackageid, currentStack) 
+
+let performOp(myOp: string, values: string list) =
+    match myOp with
+    | "sum" -> values |> List.map(fun v -> Int64.Parse(v)) |> List.sum
+    | "prod" -> values |> List.map(fun v -> Int64.Parse(v)) |> List.fold (*) 1
+    | "min" -> values |> List.map(fun v -> Int64.Parse(v)) |> List.sort |> List.head
+    | "max" -> values |> List.map(fun v -> Int64.Parse(v)) |> List.sortDescending |> List.head
+    | "lesser" -> 
+        let tmpValues = [|(values |> List.map(fun v -> Int64.Parse(v))) |> List.head; (values |> List.map(fun v -> Int64.Parse(v))) |> List.tail |> List.head|]
+        if tmpValues.[1] < tmpValues.[0] then 1 else 0
+    | "greater" -> 
+        let tmpValues = [|(values |> List.map(fun v -> Int64.Parse(v))) |> List.head; (values |> List.map(fun v -> Int64.Parse(v))) |> List.tail |> List.head|]
+        if tmpValues.[1] > tmpValues.[0] then 1 else 0
+    | "equal" -> if (values |> List.map(fun v -> Int64.Parse(v))) |> List.pairwise |> List.forall (fun (a,b) -> a = b) then 1 else 0
+    | _ -> int64(0)
+
+let rec atomizePart(currentlist: string list, myops: string list, parts: (string * string list) list) =
+    match currentlist |> List.filter(fun e -> myops |> List.contains(e)) |> List.length with
+    | 1 -> 
+        let op = (currentlist |> List.rev).Head
+        let values = (currentlist |> List.takeWhile(fun e -> not(myops |> List.contains(e))))
+        parts @ [(op, values)]
+    | _ -> 
+        let idx = currentlist |> List.findIndex(fun e -> myops |> List.contains(e))
+        let subs = currentlist |> List.splitAt(idx)
+        let newPart = ((snd subs).Head, (fst subs))
+        atomizePart((snd subs).Tail, myops, [newPart] @ parts)
+
+let rec processResult(currentlist: string list, myops: string list) =
+    let requiresSub = currentlist |> List.pairwise |> List.exists(fun (a, b) -> (myops |> List.contains(a)) && (myops |> List.contains(b)))
+    
+    match requiresSub with
+    | true -> 
+        let splitIdx = currentlist |> List.pairwise |> 
+                        List.findIndex(fun (a, b) -> (myops |> List.contains(a)) && (myops |> List.contains(b)))
+        let parts = currentlist |> List.splitAt(splitIdx)
+        let values = fst parts
+        let op::rest = snd parts
+        let operationsparts = values @ [op]
+        let result = atomizePart(operationsparts, myops, []) |> List.map(fun o -> performOp(fst o, snd o).ToString())
+        match rest with
+        | [] -> 
+            let op = (rest |> List.rev).Head
+            let values = (rest |> List.takeWhile(fun e -> not(myops |> List.contains(e))))
+            performOp(op, rest)
+        | head::tail -> processResult(result @ rest, myops)
+    | false -> 
+        let op = (currentlist |> List.rev).Head
+        let values = (currentlist |> List.takeWhile(fun e -> not(myops |> List.contains(e))))
+        performOp(op, values)
+
+let path = "day16_input.txt"   // (871)
 //let path = "test_input_00.txt" // (6)
 //let path = "test_input_01.txt" // (9)
 //let path = "test_input_02.txt" // (14)
@@ -121,17 +185,20 @@ let message =
 
 let tmpmessage = message |> Seq.exactlyOne 
 
-let opStack = new Stack<string[]>()
-parseMessage(tmpmessage, [], 0, opStack) |> List.sum
+let opStack = new Stack<Element>()
+parseMessage(tmpmessage, 0, opStack)
+
 
 let xx =
     seq {
         while opStack.Count > 0 do
             let value = opStack.Pop()
-            if value.[1] <> "lit" then yield value
-    } |> Seq.toList |> List.rev
-let values = xx |> List.map(fun v -> "(" + v.[0] + ")" + v.[1])
+            if value.Op <> "lit" then yield value
+    } |> Seq.toList// |> List.rev
+let result = xx |> List.sumBy(fun x -> x.Version)
+let values = xx |> List.map(fun v -> v.Op)
 printfn "%s", String.Join(",", values)
+processResult(values, operations)
 
 let samples = [|"C200B40A82";                   // "2"; "1"; "sum" -> 3
                 "04005AC33890";                 // "9"; "6"; "prod" -> 54
@@ -141,73 +208,21 @@ let samples = [|"C200B40A82";                   // "2"; "1"; "sum" -> 3
                 "F600BC2D8F";                   // "15"; "5"; "greater" -> 0
                 "9C005AC2F8F0";                 // "15"; "5"; "equal" -> 0
                 "9C0141080250320F1802104A08"|]  // "2"; "2"; "prod"; "3"; "1"; "sum"; "equal" -> 1
-let tmpmessage2 = String.Join("", samples.[7].ToCharArray() |> Array.map(fun c -> hexToBin((string)c)))
+let tmpmessage2 = String.Join("", samples.[6].ToCharArray() |> Array.map(fun c -> hexToBin((string)c)))
 
-let opStack2 = new Stack<string[]>()
-parseMessage(tmpmessage2, [], 0, opStack2)
+let opStack2 = new Stack<Element>()
+parseMessage(tmpmessage2, 0, opStack2)
 
-let values2 =
+let xxx =
     seq {
         while opStack2.Count > 0 do
             let value = opStack2.Pop()
-            //yield value
-            if value.[1] <> "lit" then yield value
-    } |> Seq.toList |> List.rev
-
+            if value.Op <> "lit" then yield value
+    } |> Seq.toList// |> List.rev
+let result2 = xxx |> List.sumBy(fun x -> x.Version)
+let values2 = xxx |> List.map(fun v -> v.Op)
 printfn "%s", String.Join(",", values2)
 
 
-let operations = ["sum"; "prod"; "min"; "max"; "greater"; "lesser"; "equal"]
-
-//let performOp(myOp: string, values: string list) =
-//    match myOp with
-//    | "sum" -> values |> List.map(fun v -> Int32.Parse(v)) |> List.sum
-//    | "prod" -> values |> List.map(fun v -> Int32.Parse(v)) |> List.fold (*) 1
-//    | "min" -> values |> List.map(fun v -> Int32.Parse(v)) |> List.sort |> List.head
-//    | "max" -> values |> List.map(fun v -> Int32.Parse(v)) |> List.sortDescending |> List.head
-//    | "lesser" -> 
-//        let tmpValues = [|(values |> List.map(fun v -> Int32.Parse(v))) |> List.head; (values |> List.map(fun v -> Int32.Parse(v))) |> List.tail |> List.head|]
-//        if tmpValues.[1] < tmpValues.[0] then 1 else 0
-//    | "greater" -> 
-//        let tmpValues = [|(values |> List.map(fun v -> Int32.Parse(v))) |> List.head; (values |> List.map(fun v -> Int32.Parse(v))) |> List.tail |> List.head|]
-//        if tmpValues.[1] > tmpValues.[0] then 1 else 0
-//    | "equal" -> if (values |> List.map(fun v -> Int32.Parse(v))) |> List.pairwise |> List.forall (fun (a,b) -> a = b) then 1 else 0
-//    | _ -> 0  
-
-
-let rec performOp(myOp: string, values: string list) =
-    match myOp with
-    | "lit" -> values.Head |> int64
-    | "sum" -> values |> List.map(fun v -> Int64.Parse(v)) |> List.sum
-    | "prod" -> values |> List.map(fun v -> Int64.Parse(v)) |> List.fold (*) 1
-    | "min" -> values |> List.map(fun v -> Int64.Parse(v)) |> List.sort |> List.head
-    | "max" -> values |> List.map(fun v -> Int64.Parse(v)) |> List.sortDescending |> List.head
-    | "lesser" -> 
-        let tmpValues = [|(values |> List.map(fun v -> Int64.Parse(v))) |> List.head; (values |> List.map(fun v -> Int64.Parse(v))) |> List.tail |> List.head|]
-        if tmpValues.[0] < tmpValues.[1] then int64(1) else int64(0)
-    | "greater" -> 
-        let tmpValues = [|(values |> List.map(fun v -> Int64.Parse(v))) |> List.head; (values |> List.map(fun v -> Int64.Parse(v))) |> List.tail |> List.head|]
-        if tmpValues.[0] > tmpValues.[1] then int64(1) else int64(0)
-    | "equal" -> if (values |> List.map(fun v -> Int64.Parse(v))) |> List.pairwise |> List.forall (fun (a,b) -> a = b) then int64(1) else int64(0)
-    | _ -> int64(0)
-
-
-let rec processResult(currentlist: string list, myops: string list) =
-    let numberOfOperations = (currentlist |> List.filter(fun e -> myops |> List.contains(e))) |> List.length
-    match numberOfOperations with
-    | 1 -> performOp(currentlist.Head, currentlist.Tail).ToString()
-    | _ -> 
-        performOp(currentlist.Head, [processResult(currentlist.Tail, myops)]).ToString()
-
-//let rec processResult(currentlist: string list) =
-//    let splitIdx = currentlist |> List.findIndex(fun e -> operations |> List.contains(e))
-//    let parts = currentlist |> List.splitAt(splitIdx)
-//    let values = fst parts
-//    let op::rest = snd parts
-//    let result = performOp(op, values)
-//    match rest with
-//    | [] -> result
-//    | head::tail -> processResult([result.ToString()] @ rest)
-
-//processResult(values2, operations)
+processResult(values2, operations)
 //processResult(values, operations)

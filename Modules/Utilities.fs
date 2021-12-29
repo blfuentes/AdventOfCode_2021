@@ -128,6 +128,19 @@ let toJagged<'a> (arr: 'a[,]) : 'a[][] =
     [|for x in 0..Array2D.length1 arr - 1 do
         yield [| for y in 0 ..Array2D.length2 arr - 1 -> arr.[x, y] |]|]
 
+//divides a list L into chunks for which all elements match pred
+let divide2 pred L =
+    let f x (acc,buf) =
+        match pred x,buf with
+        | true,buf -> (acc,x::buf)
+        | false,[] -> (acc,[])
+        | false,buf -> (buf::acc,[])
+
+    let rest,remainingBuffer = List.foldBack f L ([],[])
+    match remainingBuffer with
+    | [] -> rest
+    | buf -> buf :: rest
+
 // XOR OPERATOR
 let (^@) (a: bool) (b:bool) : bool =
     a <> b
