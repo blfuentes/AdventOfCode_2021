@@ -111,7 +111,9 @@
     <Content Include="day17\day17_input.txt" />
     <Content Include="day17\test_input.txt" />
     <Content Include="day18\day18_input.txt" />
-    <Content Include="day18\test_input.txt" />
+    <Content Include="day18\test_input_00.txt" />
+    <Content Include="day18\test_input_01.txt" />
+    <Content Include="day18\test_input_02.txt" />
     <Content Include="day19\day19_input.txt" />
     <Content Include="day19\test_input.txt" />
     <Content Include="day20\day20_input.txt" />
